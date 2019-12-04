@@ -3,7 +3,9 @@
 
 # Load functions & packages --------------------------------------------------------------------------------------------------- 
 source("/Users/marianaabarcazama/Desktop/Projects/MyFunctions.R")
+
 # source("/Users/mar/Desktop/Projects/MyFunctions.R")
+
 
 library(tidyverse)
 library(readxl)
@@ -15,6 +17,7 @@ library(broom)
 # Import data (leps only)------------------------------------------------------------------------------------------------------
 points <- read_xlsx("Samples.xlsx", 
                     sheet = "samples", na = c("NA", "")) 
+
 
 usa <- map_data("usa")
 states <- map_data("state")   # to load data to make usa maps with individual states 
@@ -37,6 +40,7 @@ ggplot(data = states)+
   # annotate("text", x = -85, y = 45, label = "MI")+
   # annotate("text", x = -80, y = 41, label = "NY")+
   # annotate("text", x = -71, y = 41, label = "VT")+
-  #annotate("text", x = -80, y = 41, label = "NY")+
-  coord_fixed(1.3, xlim = c(-94, -65)) # so you can change the size of the map, but the proportion y 1.3 times larger
+  coord_fixed(1.3, xlim = c(-94, -65))
+
+
 
