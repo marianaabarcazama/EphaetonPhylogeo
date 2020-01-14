@@ -4,40 +4,50 @@
 source("/Users/marianaabarcazama/Desktop/Projects/MyFunctions.R")
 # source("/Users/mar/Desktop/Projects/MyFunctions.R")
 library(raster)
+library(sf)
 
 # Worldclim files are large and not included in this repo
 # go to "https://www.worldclim.org/" and select version 2,
 # 2.5 minutes resolution to download.
 
-tminFiles <- list.files("Users/marianaabarcazama/DocumentsII/
-                        Worldclim2_2.5/wc2.0_2.5m_tmin/", ".tif", full.names = TRUE)
+# Code adapted from:
+# https://www.benjaminbell.co.uk/2018/02/rasterstacks-and-rasterplot.html
 
-test <- list.files("Users/marianaabarcazama/DocumentsII/", ".pdf", full.names = TRUE)
-list.files(R.home())
-list.files("Users/")
+# get a list of the names of all files for each variable (prec, tmin, etc)
+precFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_prec/", ".tif", full.names = TRUE)
+tminFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_tmin/", ".tif", full.names = TRUE)
+tmaxFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_tmax/", ".tif", full.names = TRUE)
+tavgFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_tavg/", ".tif", full.names = TRUE)
+bioFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_bio/", ".tif", full.names = TRUE)
 
-# Precipitation 
-pp_directory <- ()
-tmin_directory <- ("Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_tmin")
-tmax_directory <- ("Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_tmax")
-tavg_directory <- ("Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_tavg")
+# combine files into one object (class: RasterStack)
+prec <- stack(precFiles) 
+tmin <- stack(tminFiles)
+tmax <- stack(tmaxFiles)
+tavg <- stack(tavgFiles)
+bio <- stack(bioFiles)
 
-# Load packages
+# Rename layers in the RasterStack
+month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+biovars <- c("BIO1", "BIO2", "BIO3", "BIO4", "BIO5", "BIO6", "BIO7", "BIO8", "BIO9", "BIO10",
+             "BIO11", "BIO12", "BIO13", "BIO14", "BIO15", "BIO16", "BIO17", "BIO18", "BIO19")
+names(prec) <- month
+names(tmin) <- month
+names(tmax) <- month
+names(tavg) <- month
+names(bio) <- biovars
 
-# Create RasterStack objects
-t.mean.files <- list.files("../WorldClim/wc2.0_30s_tavg/", ".tif", full.names=TRUE)
-t.mean <- stack(t.mean.files)
-t.min.files <- list.files("../WorldClim/wc2.0_30s_tmin/", ".tif", full.names=TRUE)
-t.min <- stack(t.min.files)
-t.max.files <- list.files("../WorldClim/wc2.0_30s_tmax/", ".tif", full.names=TRUE)
-t.max <- stack(t.max.files)
+#Morocco <- getData('GADM', country="USA", level=0)
+plot(Morocco)
 
 library(tidyverse)
+library(ggplot2)
 library(readxl)
 library(cowplot)
 # library(MASS)
 library(car)
 library(broom)
+library(rasterVis)
 
 # Import data (leps only)------------------------------------------------------------------------------------------------------
 points <- read_xlsx("Samples.xlsx", 
@@ -69,12 +79,30 @@ ggplot(data = states)+
   # annotate("text", x = -71, y = 41, label = "VT")+
   #coord_fixed(1.3, xlim = c(-94, -65))
   coord_sf() # this is necesary for geom_sf to work.
+clim=getData('worldclim', var='bio', res=10) 
+gain(clim) = 0.1
+ggplot(clim[[1:3]])+geom_raster(aes(fill=value))+
+  facet_wrap(~variable)+
+  scale_fill_gradientn(colours=c("brown","red","yellow","darkgreen","green"),trans="log10")+
+  coord_equal()
+plot(clim[[1:3]])
+bio1 <- crop(clim[[1]], extent(-100,-65, 25,50)) # annual mean temperature
+bio2 <- crop(clim[[2]], extent(-100,-65, 25,50)) # mean diurnal range
+bio3 <- crop(clim[[3]], extent(-100,-65, 25,50)) # isothermality
+bio4 <- crop(clim[[4]], extent(-100,-65, 25,50)) # temperature seasonality
+bio5 <- crop(clim[[5]], extent(-100,-65, 25,50)) # max temp warmest month
+bio6 <- crop(clim[[6]], extent(-100,-65, 25,50)) # min temp coldest month
+bio10 <- crop(clim[[7]], extent(-100,-65, 25,50)) # Mean Temperature of Warmest Quarter
+bio11 <- crop(clim[[8]], extent(-100,-65, 25,50)) # Mean Temperature of Coldest Quarter
 
+plot(bio1)
+plot(bio2)
 # Temperature maps ------------------------------------------------------------------------------
 
 # Import temperature data (downloaded from WorldClim2)
 # Tutorial:
 # https://www.benjaminbell.co.uk/2018/01/extracting-data-and-making-climate-maps.html
+# https://cmerow.github.io/RDataScience/05_Raster.html#5_worldclim
 library(raster)
 library(rgdal)
 temp1 <- raster("wc2.0_2.5m_tmin_01.tif")
