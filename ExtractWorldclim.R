@@ -67,7 +67,7 @@ ggplot(data = states)+
   geom_point(data = points, mapping = aes(x = lon, y = lat, shape = factor(host)) )+
   scale_shape_manual(values = c(1,1,16,1))+
   geom_sf(data = drange, size = 0.2, color = "black", fill = "#E69F00", alpha = 0.3) +
-  theme_cowplot()+
+  #theme_cowplot()+
   ylab("Latitude")+
   xlab("Longitude")+
   #theme(legend.position = "none")+
@@ -79,14 +79,15 @@ ggplot(data = states)+
   # annotate("text", x = -71, y = 41, label = "VT")+
   #coord_fixed(1.3, xlim = c(-94, -65))
   coord_sf() # this is necesary for geom_sf to work.
+#library(cowplot)
 clim=getData('worldclim', var='bio', res=10) 
 gain(clim) = 0.1
-ggplot(clim[[1:3]])+geom_raster(aes(fill=value))+
+gplot(clim[[1:3]])+geom_raster(aes(fill=value))+
   facet_wrap(~variable)+
   scale_fill_gradientn(colours=c("brown","red","yellow","darkgreen","green"),trans="log10")+
   coord_equal()
 plot(clim[[1:3]])
-bio1 <- crop(clim[[1]], extent(-100,-65, 25,50)) # annual mean temperature
+bio1 <- crop(clim[[1]], extent(-100,-65, 23,50)) # annual mean temperature
 bio2 <- crop(clim[[2]], extent(-100,-65, 25,50)) # mean diurnal range
 bio3 <- crop(clim[[3]], extent(-100,-65, 25,50)) # isothermality
 bio4 <- crop(clim[[4]], extent(-100,-65, 25,50)) # temperature seasonality
