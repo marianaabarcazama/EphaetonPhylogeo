@@ -5,46 +5,10 @@ source("/Users/marianaabarcazama/Desktop/Projects/MyFunctions.R")
 # source("/Users/mar/Desktop/Projects/MyFunctions.R")
 library(raster)
 library(sf)
-
-# Worldclim files are large and not included in this repo
-# go to "https://www.worldclim.org/" and select version 2,
-# 2.5 minutes resolution to download.
-
-# Code adapted from:
-# https://www.benjaminbell.co.uk/2018/02/rasterstacks-and-rasterplot.html
-
-# get a list of the names of all files for each variable (prec, tmin, etc)
-precFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_prec/", ".tif", full.names = TRUE)
-tminFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_tmin/", ".tif", full.names = TRUE)
-tmaxFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_tmax/", ".tif", full.names = TRUE)
-tavgFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_tavg/", ".tif", full.names = TRUE)
-bioFiles <- list.files("/Users/marianaabarcazama/DocumentsII/Worldclim2_2.5/wc2.0_2.5m_bio/", ".tif", full.names = TRUE)
-
-# combine files into one object (class: RasterStack)
-prec <- stack(precFiles) 
-tmin <- stack(tminFiles)
-tmax <- stack(tmaxFiles)
-tavg <- stack(tavgFiles)
-bio <- stack(bioFiles)
-
-# Rename layers in the RasterStack
-month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-biovars <- c("BIO1", "BIO2", "BIO3", "BIO4", "BIO5", "BIO6", "BIO7", "BIO8", "BIO9", "BIO10",
-             "BIO11", "BIO12", "BIO13", "BIO14", "BIO15", "BIO16", "BIO17", "BIO18", "BIO19")
-names(prec) <- month
-names(tmin) <- month
-names(tmax) <- month
-names(tavg) <- month
-names(bio) <- biovars
-
-#Morocco <- getData('GADM', country="USA", level=0)
-plot(Morocco)
-
 library(tidyverse)
 library(ggplot2)
 library(readxl)
 library(cowplot)
-# library(MASS)
 library(car)
 library(broom)
 library(rasterVis)
@@ -61,7 +25,7 @@ Sampled <- subset(states, region %in% c( "vermont",  "massachusetts", "michigan"
                                          "new york"))
 drange <- st_read("euphydryas_phaeton.shp") # read shape file
 
-ggplot(data = states)+
+a <- ggplot(data = states)+
   geom_polygon(aes(x = long, y = lat, group = group), color = "darkgrey", fill = "lightgrey")+
   #geom_polygon(data = Sampled, mapping = aes(x = long, y = lat, group = group), color = "darkgrey", fill = "darkgrey")+
   geom_point(data = points, mapping = aes(x = lon, y = lat, shape = factor(host)) )+
@@ -79,13 +43,13 @@ ggplot(data = states)+
   # annotate("text", x = -71, y = 41, label = "VT")+
   #coord_fixed(1.3, xlim = c(-94, -65))
   coord_sf() # this is necesary for geom_sf to work.
-#library(cowplot)
-clim=getData('worldclim', var='bio', res=10) 
+# Download worldclim data
+clim = getData('worldclim', var='bio', res=2.5) 
 gain(clim) = 0.1
 gplot(clim[[1:3]])+geom_raster(aes(fill=value))+
   facet_wrap(~variable)+
   scale_fill_gradientn(colours=c("brown","red","yellow","darkgreen","green"),trans="log10")+
-  coord_equal()
+  coord_equal(xlim = c(-94, -65), ylim = c(23, 50))
 plot(clim[[1:3]])
 bio1 <- crop(clim[[1]], extent(-100,-65, 23,50)) # annual mean temperature
 bio2 <- crop(clim[[2]], extent(-100,-65, 25,50)) # mean diurnal range
@@ -98,19 +62,52 @@ bio11 <- crop(clim[[8]], extent(-100,-65, 25,50)) # Mean Temperature of Coldest 
 
 plot(bio1)
 plot(bio2)
-# Temperature maps ------------------------------------------------------------------------------
+plot(bio3)
+plot(bio4)
+plot(bio5)
+plot(bio6)
+plot(bio10)
+plot(bio11)
 
-# Import temperature data (downloaded from WorldClim2)
-# Tutorial:
-# https://www.benjaminbell.co.uk/2018/01/extracting-data-and-making-climate-maps.html
-# https://cmerow.github.io/RDataScience/05_Raster.html#5_worldclim
-library(raster)
-library(rgdal)
-temp1 <- raster("wc2.0_2.5m_tmin_01.tif")
+b <- gplot(bio11, maxpixels = 50000000)+geom_raster(aes(fill=value))+
+  facet_wrap(~variable)+
+  scale_fill_gradientn(colours=c("brown","red","yellow","darkgreen","green"),trans="log10")+
+  #geom_point(data = points, mapping = aes(x = lon, y = lat, shape = factor(host)) )+
+  #geom_sf(data = drange, size = 0.2, color = "black", fill = "#E69F00", alpha = 0.3) +
+  coord_equal(xlim = c(-94, -65), ylim = c(23, 50))
 
-tempcol <- colorRampPalette(c("purple", "blue", "skyblue", "green", "lightgreen", "yellow", "orange", "red", "darkred"))
-#Next, we'll plot a map of global January temperatures using this colour scheme:
+ggplot(data = states)+
+  geom_polygon(aes(x = long, y = lat, group = group), color = "darkgrey", fill = "lightgrey")+
+  #geom_polygon(data = Sampled, mapping = aes(x = long, y = lat, group = group), color = "darkgrey", fill = "darkgrey")+
+  geom_point(data = points, mapping = aes(x = lon, y = lat, shape = factor(host)) )+
+  scale_shape_manual(values = c(1,1,16,1))+
+  geom_sf(data = drange, size = 0.2, color = "black", fill = "#E69F00", alpha = 0.3) +
+  geom_raster(data = bio11, mapping =aes(fill = value))+
+  #theme_cowplot()+
+  ylab("Latitude")+
+  xlab("Longitude")+
+  #theme(legend.position = "none")+
+  # modify this line to add state names automatically
+  #geom_text(data= names, aes(long, lat, label = state), size=2)
+  # annotate("text", x = -93, y = 34, label = "AK")+
+  # annotate("text", x = -85, y = 45, label = "MI")+
+  # annotate("text", x = -80, y = 41, label = "NY")+
+  # annotate("text", x = -71, y = 41, label = "VT")+
+  #coord_fixed(1.3, xlim = c(-94, -65))
+  coord_sf() # this is necesary for geom_sf to work.
 
-plot(temp1, col=tempcol(100))
-plot(temp1, xlim=c(-130, -65), ylim=c(25, 50), col=tempcol(100))
 # Next step: combine temperature and range maps, plot also min, max, avg temperature and precipitation
+library(rasterVis)
+library(sp)
+
+# Download States boundaries (might take time)
+out <- getData('GADM', country='United States', level=1)
+
+# Extract California state
+California <- out[out$NAME_1 %in% 'California',]
+
+# Plot raster and California:
+
+levelplot(RAD2012.all) + 
+  layer(sp.polygons(California))
+plot_grid(a,b)
