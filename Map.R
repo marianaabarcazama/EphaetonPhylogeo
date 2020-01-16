@@ -3,9 +3,7 @@
 
 # Load functions & packages --------------------------------------------------------------------------------------------------- 
 source("/Users/marianaabarcazama/Desktop/Projects/MyFunctions.R")
-
 # source("/Users/mar/Desktop/Projects/MyFunctions.R")
-
 
 library(tidyverse)
 library(readxl)
@@ -45,18 +43,3 @@ ggplot(data = states)+
   #coord_fixed(1.3, xlim = c(-94, -65))
   coord_sf() # this is necesary for geom_sf to work.
 
-# Temperature maps ------------------------------------------------------------------------------
-
-# Import temperature data (downloaded from WorldClim2)
-# Tutorial:
-# https://www.benjaminbell.co.uk/2018/01/extracting-data-and-making-climate-maps.html
-library(raster)
-library(rgdal)
-temp1 <- raster("wc2.0_2.5m_tmin_01.tif")
-
-tempcol <- colorRampPalette(c("purple", "blue", "skyblue", "green", "lightgreen", "yellow", "orange", "red", "darkred"))
-#Next, we'll plot a map of global January temperatures using this colour scheme:
-
-plot(temp1, col=tempcol(100))
-plot(temp1, xlim=c(-130, -65), ylim=c(25, 50), col=tempcol(100))
-# Next step: combine temperature and range maps, plot also min, max, avg temperature and precipitation
