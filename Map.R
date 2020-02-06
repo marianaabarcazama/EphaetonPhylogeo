@@ -11,6 +11,8 @@ library(cowplot)
 # library(MASS)
 library(car)
 library(broom)
+library(sf)
+
 
 # Import data (leps only)------------------------------------------------------------------------------------------------------
 points <- read_xlsx("Samples.xlsx", 
